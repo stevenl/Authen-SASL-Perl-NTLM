@@ -14,41 +14,76 @@ use constant {
     PASS   => 'pass',
 };
 
-ntlm_reset();
-ntlm_host(HOST);
-ntlm_user(USER);
-ntlm_password(PASS);
+use_ok('Authen::SASL::Perl::NTLM');
 
 my $challenge =
   'TlRMTVNTUAACAAAABAAEADAAAAAFggEAQUJDREVGR0gAAAAAAAAAAAAAAAAAAAAA';
-my $msg1 = ntlm();
-my $msg2 = ntlm($challenge);
 
-use_ok('Authen::SASL::Perl::NTLM');
+subtest 'simple' => sub {
+    my $ntlm = Authen::NTLM->new(
+        host     => HOST,
+        user     => USER,
+        password => PASS,
+    );
+    my $msg1 = $ntlm->challenge;
+    my $msg2 = $ntlm->challenge($challenge);
 
-my $sasl = new_ok(
-    'Authen::SASL', [
-        mechanism => 'NTLM',
-        callback  => {
-            user => USER,
-            pass => PASS,
-        },
-    ]
-);
+    my $sasl = new_ok(
+        'Authen::SASL', [
+            mechanism => 'NTLM',
+            callback  => {
+                user => USER,
+                pass => PASS,
+            },
+        ]
+    );
 
-my $conn = $sasl->client_new( 'ldap', 'localhost' );
+    my $conn = $sasl->client_new( 'ldap', 'localhost' );
 
-isa_ok( $conn, 'Authen::SASL::Perl::NTLM' );
+    isa_ok( $conn, 'Authen::SASL::Perl::NTLM' );
 
-is( $conn->mechanism, 'NTLM', 'conn mechanism' );
+    is( $conn->mechanism, 'NTLM', 'conn mechanism' );
 
-is( $conn->client_start, q{}, 'client_start' );
+    is( $conn->client_start, q{}, 'client_start' );
 
-ok( $msg1, 'initial message has a response' );
+    ok( $msg1, 'initial message has a response' );
 
-is( $conn->client_step(''), decode_base64($msg1), 'initial message' );
+    is( $conn->client_step(''), decode_base64($msg1), 'initial message' );
 
-is( $conn->client_step( decode_base64($challenge) ),
-    decode_base64($msg2), 'challenge response' );
+    is( $conn->client_step( decode_base64($challenge) ),
+        decode_base64($msg2), 'challenge response' );
+};
+
+subtest 'domain specified with user' => sub {
+    my $ntlm = Authen::NTLM->new(
+        host     => HOST,
+        domain   => DOMAIN,
+        user     => USER,
+        password => PASS,
+    );
+    my $msg1 = $ntlm->challenge;
+    my $msg2 = $ntlm->challenge($challenge);
+
+    my $sasl = new_ok(
+        'Authen::SASL', [
+            mechanism => 'NTLM',
+            callback  => {
+                user => ( DOMAIN . '\\' . USER ),
+                pass => PASS,
+            },
+        ]
+    );
+
+    my $conn = $sasl->client_new( 'ldap', 'localhost' );
+
+    is( $conn->client_start, q{}, 'client_start' );
+
+    ok( $msg1, 'initial message has a response' );
+
+    is( $conn->client_step(''), decode_base64($msg1), 'initial message' );
+
+    is( $conn->client_step( decode_base64($challenge) ),
+        decode_base64($msg2), 'challenge response' );
+};
 
 done_testing;

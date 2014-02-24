@@ -15,9 +15,14 @@ sub mechanism { return 'NTLM' }
 sub client_start {
     my ($self) = @_;
 
+    ## no critic (RegularExpressions)
+    my @user = split /\\/, $self->_call('user');
+    my ( $domain, $user ) = @user > 1 ? @user : ( undef, $user[0] );
+
     Authen::NTLM::ntlm_reset();
     Authen::NTLM::ntlm_host( $self->host );
-    Authen::NTLM::ntlm_user( $self->_call('user') );
+    Authen::NTLM::ntlm_domain($domain) if defined $domain;
+    Authen::NTLM::ntlm_user($user);
     Authen::NTLM::ntlm_password( $self->_call('pass') );
 
     return q{};
@@ -25,8 +30,12 @@ sub client_start {
 
 sub client_step {
     my ( $self, $string ) = @_;
-    $string = Authen::NTLM::ntlm( MIME::Base64::encode_base64($string) );
-    return MIME::Base64::decode_base64($string);
+    #<<<
+    return
+        MIME::Base64::decode_base64(
+            Authen::NTLM::ntlm(
+                MIME::Base64::encode_base64($string) ) );
+    #>>>
 }
 
 sub server_start {
@@ -52,7 +61,7 @@ sub server_step {
     $sasl = Authen::SASL->new(
         mechanism => 'NTLM',
         callback  => {
-            user => $username,
+            user => $username, # or "$domain\\$username"
             pass => $password,
         },
     );
@@ -69,7 +78,8 @@ The callbacks used are:
 
 =for :list
 = user
-The username to be used for authentication.
+The username to be used for authentication. The domain may optionally be
+specified as part of the C<user> string in the format C<"$domain\\$username">.
 = pass
 The user's password to be used for authentication.
 
