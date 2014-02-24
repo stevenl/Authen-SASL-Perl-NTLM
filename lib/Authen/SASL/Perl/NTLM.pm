@@ -19,11 +19,12 @@ sub client_start {
     my @user = split /\\/, $self->_call('user');
     my ( $domain, $user ) = @user > 1 ? @user : ( undef, $user[0] );
 
-    Authen::NTLM::ntlm_reset();
-    Authen::NTLM::ntlm_host( $self->host );
-    Authen::NTLM::ntlm_domain($domain) if defined $domain;
-    Authen::NTLM::ntlm_user($user);
-    Authen::NTLM::ntlm_password( $self->_call('pass') );
+    $self->{ntlm} = Authen::NTLM->new(
+        host     => $self->host,
+        domain   => $domain,
+        user     => $user,
+        password => $self->_call('pass'),
+    );
 
     return q{};
 }
@@ -33,8 +34,14 @@ sub client_step {
     #<<<
     return
         MIME::Base64::decode_base64(
-            Authen::NTLM::ntlm(
-                MIME::Base64::encode_base64($string) ) );
+            $self->{ntlm}->challenge(
+                # $string must be undef for challenge()
+                # to generate a type 1 message
+                $string
+                  ? MIME::Base64::encode_base64($string)
+                  : undef
+            )
+        );
     #>>>
 }
 
