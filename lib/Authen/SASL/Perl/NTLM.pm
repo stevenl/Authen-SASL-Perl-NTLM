@@ -5,7 +5,7 @@ use strict;
 use warnings;
 
 use Authen::NTLM ();
-use Carp ();
+use Carp         ();
 use MIME::Base64 ();
 
 use parent qw(Authen::SASL::Perl);
@@ -31,14 +31,14 @@ sub client_step {
 
 sub server_start {
     my ( $self, $response, $user_cb ) = @_;
-    $user_cb ||= sub {};
+    $user_cb ||= sub { };
 
     Carp::confess 'server_start not implemented';
 }
 
 sub server_step {
     my ( $self, $response, $user_cb ) = @_;
-    $user_cb ||= sub {};
+    $user_cb ||= sub { };
 
     Carp::confess 'server_step not implemented';
 }
@@ -51,12 +51,15 @@ sub server_step {
 
     $sasl = Authen::SASL->new(
         mechanism => 'NTLM',
-        host      => $host,
         callback  => {
-            user => $user,
+            user => $username,
             pass => $password,
         },
     );
+
+    $client = $sasl->client_new(...);
+    $client->client_start;
+    $client->client_step;
 
 =head1 CALLBACK
 
