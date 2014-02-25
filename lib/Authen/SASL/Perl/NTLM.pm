@@ -5,7 +5,6 @@ use strict;
 use warnings;
 
 use Authen::NTLM ();
-use Carp         ();
 use MIME::Base64 ();
 
 use parent qw(Authen::SASL::Perl);
@@ -45,20 +44,6 @@ sub client_step {
     #>>>
 }
 
-sub server_start {
-    my ( $self, $response, $user_cb ) = @_;
-    $user_cb ||= sub { };
-
-    Carp::confess 'server_start not implemented';
-}
-
-sub server_step {
-    my ( $self, $response, $user_cb ) = @_;
-    $user_cb ||= sub { };
-
-    Carp::confess 'server_step not implemented';
-}
-
 1;
 
 =head1 SYNOPSIS
@@ -76,6 +61,11 @@ sub server_step {
     $client = $sasl->client_new(...);
     $client->client_start;
     $client->client_step;
+
+=head1 DESCRIPTION
+
+This module is a plugin for the Authen::SASL framework that implements the
+client procedures to do NTLM authentication.
 
 =head1 CALLBACK
 
