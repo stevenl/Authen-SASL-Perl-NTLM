@@ -24,7 +24,7 @@ version 0.001
 
 # DESCRIPTION
 
-This module is a plugin for the Authen::SASL framework that implements the
+This module is a plugin for the [Authen::SASL](https://metacpan.org/module/Authen::SASL) framework that implements the
 client procedures to do NTLM authentication.
 
 # CALLBACK
@@ -41,6 +41,10 @@ The callbacks used are:
 - pass
 
     The user's password to be used for authentication.
+
+# SEE ALSO
+
+[Authen::SASL](https://metacpan.org/module/Authen::SASL), [Authen::SASL::Perl](https://metacpan.org/module/Authen::SASL::Perl).
 
 # AUTHOR
 
