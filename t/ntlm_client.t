@@ -7,12 +7,10 @@ use Authen::SASL qw(Perl);
 use MIME::Base64 qw(decode_base64);
 use Authen::NTLM;
 
-use constant {
-    HOST   => 'localhost',
-    DOMAIN => 'domain',
-    USER   => 'user',
-    PASS   => 'pass',
-};
+use constant HOST   => 'localhost';
+use constant DOMAIN => 'domain';
+use constant USER   => 'user';
+use constant PASS   => 'pass';
 
 use_ok('Authen::SASL::Perl::NTLM');
 
