@@ -1,10 +1,10 @@
 # NAME
 
-Authen::SASL::Perl::NTLM - NTLM authentication plugin for Authen::SASL::Perl
+Authen::SASL::Perl::NTLM - NTLM authentication plugin for Authen::SASL
 
 # VERSION
 
-version 0.001
+version 0.002
 
 # SYNOPSIS
 
@@ -20,12 +20,25 @@ version 0.001
 
     $client = $sasl->client_new(...);
     $client->client_start;
-    $client->client_step;
+    $client->client_step('');
+    $client->client_step($challenge);
 
 # DESCRIPTION
 
 This module is a plugin for the [Authen::SASL](https://metacpan.org/module/Authen::SASL) framework that implements the
 client procedures to do NTLM authentication.
+
+Most users will probably only need this module indirectly, when you use
+another module that depends on Authen::SASL with NTLM authentication.
+E.g. connecting to an MS Exchange Server using Email::Sender, which
+depends on Net::SMTP(S) which in turn depends on Authen::SASL.
+
+You may see this when you get the following error message:
+
+    No SASL mechanism found
+
+(Unfortunately, Authen::SASL currently doesn't tell you which SASL mechanism
+is missing.)
 
 # CALLBACK
 
@@ -41,6 +54,10 @@ The callbacks used are:
 - pass
 
     The user's password to be used for authentication.
+
+## Server
+
+This module does not support server-side authentication.
 
 # SEE ALSO
 

@@ -1,5 +1,9 @@
 Revision history for Authen-SASL-Perl-NTLM
 
+0.002   2014-06-03
+        Set success and error status as expected by Authen::SASL::Perl.
+        Added documentation.
+
 0.001   2014-02-25
         Initial release
 
