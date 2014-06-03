@@ -17,15 +17,17 @@ use_ok('Authen::SASL::Perl::NTLM');
 my $challenge =
   'TlRMTVNTUAACAAAABAAEADAAAAAFggEAQUJDREVGR0gAAAAAAAAAAAAAAAAAAAAA';
 
-subtest 'simple' => sub {
-    my $ntlm = Authen::NTLM->new(
-        host     => HOST,
-        user     => USER,
-        password => PASS,
-    );
-    my $msg1 = $ntlm->challenge;
-    my $msg2 = $ntlm->challenge($challenge);
+my $ntlm = Authen::NTLM->new(
+    host     => HOST,
+    user     => USER,
+    password => PASS,
+);
+my $msg1 = $ntlm->challenge;
+my $msg2 = $ntlm->challenge($challenge);
 
+my $conn;
+
+subtest 'simple' => sub {
     my $sasl = new_ok(
         'Authen::SASL', [
             mechanism => 'NTLM',
@@ -36,20 +38,49 @@ subtest 'simple' => sub {
         ]
     );
 
-    my $conn = $sasl->client_new( 'ldap', 'localhost' );
+    $conn = $sasl->client_new( 'ldap', 'localhost' );
 
     isa_ok( $conn, 'Authen::SASL::Perl::NTLM' );
 
     is( $conn->mechanism, 'NTLM', 'conn mechanism' );
 
-    is( $conn->client_start, q{}, 'client_start' );
+    is( $conn->client_start, q{}, 'client start' );
+    ok( !$conn->is_success, 'needs step' );
 
-    ok( $msg1, 'initial message has a response' );
-
-    is( $conn->client_step(''), decode_base64($msg1), 'initial message' );
+    is( $conn->client_step(), decode_base64($msg1),
+        'initial message is correct (from undef challenge string)' );
+    ok( !$conn->is_success, 'still needs step' );
 
     is( $conn->client_step( decode_base64($challenge) ),
-        decode_base64($msg2), 'challenge response' );
+        decode_base64($msg2), 'challenge response is correct' );
+    ok( $conn->is_success, 'success' );
+};
+
+subtest 'step 1 error is detected' => sub {
+    is( $conn->client_start, q{}, 'client restart' );
+    ok( $conn->need_step, 'needs step' );
+
+    is( $conn->client_step($challenge), q{}, 'empty response' );
+    like( $conn->error, qr/type 1/, 'error is set' );
+};
+
+subtest 'empty challenge string for step 1 is accepted' => sub {
+    is( $conn->client_start, q{}, 'client restart' );
+    ok( $conn->need_step, 'needs step' );
+
+    is( $conn->client_step(''), decode_base64($msg1),
+        'initial message is correct (from empty challenge string)' );
+    ok( $conn->need_step, 'still needs step' );
+};
+
+subtest 'step 2 error is detected' => sub {
+    is( $conn->client_step(''), q{}, 'empty response' );
+    like( $conn->error, qr/type 2/, 'error is set' );
+};
+
+subtest 'invalid step error is detected' => sub {
+    is( $conn->client_step($challenge), q{}, 'empty response' );
+    like( $conn->error, qr/Invalid step/, 'error is set' );
 };
 
 subtest 'domain specified with user' => sub {

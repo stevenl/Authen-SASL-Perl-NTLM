@@ -13,13 +13,17 @@ use parent qw(Authen::SASL::Perl);
 # sub _order { 1 }
 # sub _secflags { 0 };
 
-sub mechanism { return 'NTLM' }
+sub mechanism { 'NTLM' }
 
 #
 # Initialises the NTLM object and sets the domain, host, user, and password.
 #
 sub client_start {
     my ($self) = @_;
+
+    $self->{need_step} = 1;
+    $self->{error}     = undef;
+    $self->{stage}     = 0;
 
     my $user = $self->_call('user');
 
@@ -46,13 +50,29 @@ sub client_start {
 sub client_step {
     my ( $self, $challenge ) = @_;
 
-    # The challenge has been decoded but Authen::NTLM expects it encoded
-    $challenge = MIME::Base64::encode_base64($challenge)
-      if defined $challenge;
+    if ( defined $challenge ) {
+        # The challenge has been decoded but Authen::NTLM expects it encoded
+        $challenge = MIME::Base64::encode_base64($challenge);
 
-    # Empty challenge string needs to be undef if we want
-    # Authen::NTLM::challenge() to generate a type 1 message
-    $challenge = undef if $challenge eq '';
+        # Empty challenge string needs to be undef if we want
+        # Authen::NTLM::challenge() to generate a type 1 message
+        $challenge = undef if $challenge eq '';
+    }
+
+    my $stage = ++$self->{stage};
+    if ( $stage == 1 ) {
+        $self->set_error('Challenge must not be given for type 1 request')
+          if $challenge;
+    }
+    elsif ( $stage == 2 ) {
+        $self->set_success; # no more steps
+        $self->set_error('No challenge was given for type 2 request')
+          if !$challenge;
+    }
+    else {
+        $self->set_error('Invalid step');
+    }
+    return '' if $self->error;
 
     my $response = $self->{ntlm}->challenge($challenge);
 
