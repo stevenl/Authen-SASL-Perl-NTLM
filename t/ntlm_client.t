@@ -68,7 +68,8 @@ subtest 'empty challenge string for step 1 is accepted' => sub {
     is( $conn->client_start, q{}, 'client restart' );
     ok( $conn->need_step, 'needs step' );
 
-    is( $conn->client_step(''), decode_base64($msg1),
+    is( $conn->client_step(''),
+        decode_base64($msg1),
         'initial message is correct (from empty challenge string)' );
     ok( $conn->need_step, 'still needs step' );
 };

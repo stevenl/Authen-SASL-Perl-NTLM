@@ -1,6 +1,7 @@
 package Authen::SASL::Perl::NTLM;
 # ABSTRACT: NTLM authentication plugin for Authen::SASL
 
+use 5.006;
 use strict;
 use warnings;
 
@@ -13,7 +14,7 @@ use parent qw(Authen::SASL::Perl);
 # sub _order { 1 }
 # sub _secflags { 0 };
 
-sub mechanism { 'NTLM' }
+sub mechanism { 'NTLM' } ## no critic (RequireFinalReturn)
 
 #
 # Initialises the NTLM object and sets the domain, host, user, and password.
@@ -29,7 +30,8 @@ sub client_start {
 
     # Check for the domain in the username
     my $domain;
-    ( $domain, $user ) = split( /\\/, $user ) if index( $user, '\\' ) > -1;
+    ( $domain, $user ) = split m{ \\ }xms, $user
+      if index( $user, q{\\} ) > -1;
 
     $self->{ntlm} = Authen::NTLM->new(
         host     => $self->host,
@@ -56,7 +58,7 @@ sub client_step {
 
         # Empty challenge string needs to be undef if we want
         # Authen::NTLM::challenge() to generate a type 1 message
-        $challenge = undef if $challenge eq '';
+        $challenge = undef if $challenge eq q{};
     }
 
     my $stage = ++$self->{stage};
@@ -72,7 +74,7 @@ sub client_step {
     else {
         $self->set_error('Invalid step');
     }
-    return '' if $self->error;
+    return q{} if $self->error;
 
     my $response = $self->{ntlm}->challenge($challenge);
 
