@@ -85,6 +85,11 @@ sub client_step {
 
 1;
 
+=for :badge
+=for html
+<a href="https://travis-ci.org/stevenl/Authen-SASL-Perl-NTLM"><img src="https://travis-ci.org/stevenl/Authen-SASL-Perl-NTLM.svg?branch=master" alt="Build Status"></a>
+<a href='https://coveralls.io/r/stevenl/Authen-SASL-Perl-NTLM?branch=master'><img src='https://coveralls.io/repos/stevenl/Authen-SASL-Perl-NTLM/badge.png?branch=master' alt='Coverage Status' /></a>
+
 =head1 SYNOPSIS
 
     use Authen::SASL qw(Perl);
