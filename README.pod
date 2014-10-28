@@ -1,12 +1,14 @@
-# NAME
+=pod
+
+=head1 NAME
 
 Authen::SASL::Perl::NTLM - NTLM authentication plugin for Authen::SASL
 
-# VERSION
+=head1 VERSION
 
 version 0.002
 
-# SYNOPSIS
+=head1 SYNOPSIS
 
     use Authen::SASL qw(Perl);
 
@@ -23,9 +25,9 @@ version 0.002
     $client->client_step('');
     $client->client_step($challenge);
 
-# DESCRIPTION
+=head1 DESCRIPTION
 
-This module is a plugin for the [Authen::SASL](https://metacpan.org/module/Authen::SASL) framework that implements the
+This module is a plugin for the L<Authen::SASL> framework that implements the
 client procedures to do NTLM authentication.
 
 Most users will probably only need this module indirectly, when you use
@@ -40,36 +42,43 @@ You may see this when you get the following error message:
 (Unfortunately, Authen::SASL currently doesn't tell you which SASL mechanism
 is missing.)
 
-# CALLBACK
+=head1 CALLBACK
 
 The callbacks used are:
 
-## Client
+=head2 Client
 
-- user
+=over 4
 
-    The username to be used for authentication. The domain may optionally be
-    specified as part of the `user` string in the format `"$domain\\$username"`.
+=item user
 
-- pass
+The username to be used for authentication. The domain may optionally be
+specified as part of the C<user> string in the format C<"$domain\\$username">.
 
-    The user's password to be used for authentication.
+=item pass
 
-## Server
+The user's password to be used for authentication.
+
+=back
+
+=head2 Server
 
 This module does not support server-side authentication.
 
-# SEE ALSO
+=head1 SEE ALSO
 
-[Authen::SASL](https://metacpan.org/module/Authen::SASL), [Authen::SASL::Perl](https://metacpan.org/module/Authen::SASL::Perl).
+L<Authen::SASL>, L<Authen::SASL::Perl>.
 
-# AUTHOR
+=for Pod::Coverage mechanism client_start client_step
+
+=head1 AUTHOR
 
 Steven Lee <stevenwh.lee@gmail.com>
 
-# COPYRIGHT AND LICENSE
+=head1 COPYRIGHT AND LICENSE
 
 This software is copyright (c) 2014 by Steven Lee.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
+
