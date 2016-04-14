@@ -27,7 +27,8 @@ my $msg2 = $ntlm->challenge($challenge);
 
 my $conn;
 
-subtest 'simple' => sub {
+# basic tests
+{
     my $sasl = new_ok(
         'Authen::SASL', [
             mechanism => 'NTLM',
@@ -54,17 +55,19 @@ subtest 'simple' => sub {
     is( $conn->client_step( decode_base64($challenge) ),
         decode_base64($msg2), 'challenge response is correct' );
     ok( $conn->is_success, 'success' );
-};
+}
 
-subtest 'step 1 error is detected' => sub {
+# step 1 error is detected
+{
     is( $conn->client_start, q{}, 'client restart' );
     ok( $conn->need_step, 'needs step' );
 
     is( $conn->client_step($challenge), q{}, 'empty response' );
     like( $conn->error, qr/type 1/, 'error is set' );
-};
+}
 
-subtest 'empty challenge string for step 1 is accepted' => sub {
+# empty challenge string for step 1 is accepted
+{
     is( $conn->client_start, q{}, 'client restart' );
     ok( $conn->need_step, 'needs step' );
 
@@ -72,19 +75,22 @@ subtest 'empty challenge string for step 1 is accepted' => sub {
         decode_base64($msg1),
         'initial message is correct (from empty challenge string)' );
     ok( $conn->need_step, 'still needs step' );
-};
+}
 
-subtest 'step 2 error is detected' => sub {
+# step 2 error is detected
+{
     is( $conn->client_step(''), q{}, 'empty response' );
     like( $conn->error, qr/type 2/, 'error is set' );
-};
+}
 
-subtest 'invalid step error is detected' => sub {
+# invalid step error is detected
+{
     is( $conn->client_step($challenge), q{}, 'empty response' );
     like( $conn->error, qr/Invalid step/, 'error is set' );
-};
+}
 
-subtest 'domain specified with user' => sub {
+# domain specified with user
+{
     my $ntlm = Authen::NTLM->new(
         host     => HOST,
         domain   => DOMAIN,
@@ -114,6 +120,6 @@ subtest 'domain specified with user' => sub {
 
     is( $conn->client_step( decode_base64($challenge) ),
         decode_base64($msg2), 'challenge response' );
-};
+}
 
 done_testing;
